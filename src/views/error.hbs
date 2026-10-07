@@ -1,0 +1,25 @@
+<div class="error-page">
+  <div class="error-code">{{status}}</div>
+  <h1>{{message}}</h1>
+  {{#if code}}
+  <p>Error code: {{code}}</p>
+  {{/if}}
+
+  <div class="error-actions">
+    {{#if showConfigButton}}
+    <a href="{{configUrl}}" class="btn btn-primary">Go to Configuration</a>
+    {{else if showLogin}}
+    <a href="/login" class="btn btn-primary">Try Login Again</a>
+    {{else}}
+    <a href="/" class="btn btn-primary">Go Home</a>
+    {{/if}}
+    <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+  </div>
+
+  {{#if details}}
+  <div class="error-details">
+    <h3>Technical Details</h3>
+    <pre>{{details}}</pre>
+  </div>
+  {{/if}}
+</div>

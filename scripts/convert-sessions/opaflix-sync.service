@@ -1,0 +1,58 @@
+[Unit]
+Description=Opaflix Session Sync Service
+Documentation=https://github.com/fabiograsso/okta-opaflix/blob/main/scripts/convert-sessions/README.md
+After=network.target
+
+[Service]
+Type=simple
+
+# Environment configuration file
+# Copy opaflix-sync.env.example to this location and configure
+EnvironmentFile=/opt/opaflix/opaflix-sync.env
+
+# Service executable
+# Adjust path to match your installation
+ExecStart=/usr/bin/python3 /opt/opaflix/opaflix-sync.py
+
+# Restart policy
+Restart=on-failure
+RestartSec=30
+
+# Graceful shutdown timeout
+TimeoutStopSec=60
+
+# Logging - output to systemd journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=opaflix-sync
+
+# =============================================================================
+# Security Hardening
+# =============================================================================
+
+# State directory for sft CLI cache (creates /var/lib/opaflix)
+StateDirectory=opaflix
+
+# Set HOME to state directory so sft can write its cache/logs there
+Environment=HOME=/var/lib/opaflix
+
+# Prevent privilege escalation
+NoNewPrivileges=true
+
+# Restrict filesystem access
+ProtectSystem=strict
+ProtectHome=true
+
+# Restrict kernel and system access
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# Private /tmp for the service
+PrivateTmp=true
+
+# Restrict network access (only needed for S3 HTTPS)
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

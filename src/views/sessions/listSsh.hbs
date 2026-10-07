@@ -1,0 +1,51 @@
+<div class="page-header">
+  <h1>SSH Sessions</h1>
+  <p class="subtitle">Recorded SSH terminal sessions{{#if totalCount}} ({{totalCount}} total){{/if}}</p>
+</div>
+
+{{> filterBar sessionType="ssh"}}
+
+{{#if sessions.length}}
+{{> sessionTable sessionType="ssh"}}
+
+{{> pagination}}
+
+{{else}}
+<div class="empty-state">
+  <div class="empty-icon">
+    <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+    </svg>
+  </div>
+  {{#if hasActiveFilters}}
+  <h2>No Matching Sessions</h2>
+  <p>No SSH sessions match your search criteria.</p>
+  <button type="button" id="clearFiltersEmptyBtn" class="btn btn-primary">Clear All Filters</button>
+  {{else}}
+  <h2>No SSH Sessions Found</h2>
+  <p>There are no recorded SSH sessions in the storage.</p>
+  {{/if}}
+</div>
+{{/if}}
+
+{{> advancedSearchModal}}
+
+<script src="{{asset '/js/sessionList.js'}}"></script>
+<script id="sessionListConfig" type="application/json">
+{
+  "sortField": {{{json sortField}}},
+  "sortOrder": {{{json sortOrder}}},
+  "sessionType": "ssh"
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var configEl = document.getElementById('sessionListConfig');
+  var config = JSON.parse(configEl.textContent);
+  initSessionList({
+    sortField: config.sortField || 'timestamp',
+    sortOrder: config.sortOrder || 'desc',
+    sessionType: config.sessionType
+  });
+});
+</script>

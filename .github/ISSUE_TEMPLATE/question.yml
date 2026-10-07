@@ -1,0 +1,62 @@
+name: Question
+description: Ask a question about setup, usage, or troubleshooting
+title: "[Question]: "
+labels: ["question", "support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question? We're happy to help! Please fill out the form below.
+
+        > **Tip:** Check the [README](https://github.com/fabiograsso/okta-opaflix/blob/main/README.md) and [AWS Guide](https://github.com/fabiograsso/okta-opaflix/blob/main/AWS.md) first - your answer might already be there!
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched [existing issues](https://github.com/fabiograsso/okta-opaflix/issues) for similar questions
+          required: true
+        - label: I have read the [documentation](https://github.com/fabiograsso/okta-opaflix/blob/main/README.md)
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      options:
+        - Installation / Setup
+        - Configuration
+        - AWS / S3 setup
+        - IAM Roles Anywhere
+        - Okta OIDC setup
+        - OPA API integration
+        - Session conversion (sft tool)
+        - Deployment (Docker, Vercel)
+        - Troubleshooting
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: How do I...? / What is the best way to...? / Why does...?
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What Have You Tried?
+      description: Describe what you've already attempted or researched
+      placeholder: I tried... / I read about... / I configured...
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any relevant configuration, error messages, or screenshots
+      placeholder: Paste logs, config snippets, or drag images here...

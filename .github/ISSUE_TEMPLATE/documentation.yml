@@ -1,0 +1,72 @@
+name: Documentation
+description: Report documentation issues or suggest improvements
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve the documentation! Please fill out the form below.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation Issue Type
+      options:
+        - Incorrect information
+        - Missing information
+        - Unclear or confusing
+        - Typo or grammar
+        - Outdated content
+        - New documentation needed
+    validations:
+      required: true
+
+  - type: dropdown
+    id: document
+    attributes:
+      label: Affected Document
+      description: Which document has the issue?
+      options:
+        - README.md (Main documentation)
+        - docs/AWS.md (AWS Setup Guide)
+        - ./scripts/aws/README.md (AWS CLI scripts)
+        - ./scripts/convert-sessions/README.md (Session conversion scripts)
+        - CLAUDE.md (Developer Guide)
+        - Code comments
+        - In-app help text
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: input
+    id: section
+    attributes:
+      label: Section / URL
+      description: Which section or provide a link to the specific location
+      placeholder: "e.g., 'Installation' section or URL"
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Content
+      description: What does the documentation currently say? (quote or summarize)
+      placeholder: The current documentation says...
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: What should it say instead? Or what's missing?
+      placeholder: It should say... / Add information about...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to submit a PR with the fix?
+      options:
+        - "Yes, I can submit a PR"
+        - "No, but the issue is clear enough to fix"

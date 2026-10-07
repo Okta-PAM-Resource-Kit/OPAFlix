@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Opaflix - Select Team">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>Select Team - Opaflix</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<div class="team-select-page">
+  <div class="team-select-card">
+    <div class="team-select-header">
+      <svg class="team-select-logo" width="200" height="50" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#B20710"/>
+            <stop offset="50%" stop-color="#E50914"/>
+            <stop offset="100%" stop-color="#B20710"/>
+          </linearGradient>
+        </defs>
+        <text
+          x="50%"
+          y="60%"
+          text-anchor="middle"
+          fill="url(#redGradient)"
+          font-family="Arial Black, Helvetica, sans-serif"
+          font-size="120"
+          letter-spacing="8"
+          dominant-baseline="middle">
+          Opaflix
+        </text>
+      </svg>
+      <h1>Connect to Your OPA Instance</h1>
+      <p>Enter your OPA tenant URL and team name to continue</p>
+    </div>
+
+    <form class="team-select-form" id="teamSelectForm">
+      <div class="form-group">
+        <label for="tenantUrl">Tenant URL</label>
+        <input
+          type="text"
+          id="tenantUrl"
+          name="tenant"
+          placeholder="e.g., demo-blue-sky-1234.pam.okta.com"
+          required
+          autocomplete="off"
+          autofocus
+          pattern="^[a-z0-9-]+\.pam\.(okta|oktapreview)\.com$"
+        >
+        <small class="form-hint">The OPA instance URL (without https://). Use <code>.oktapreview.com</code> for preview environments.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="teamName">Team Name</label>
+        <input
+          type="text"
+          id="teamName"
+          name="team"
+          placeholder="e.g., blue-sky"
+          required
+          autocomplete="off"
+          pattern="^[a-z0-9-]+$"
+        >
+        <small class="form-hint">Your team name within the OPA instance.</small>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        Connect
+      </button>
+    </form>
+
+    <div class="team-select-footer">
+      <p>You can also access directly using:</p>
+      <code>?tenant=your-tenant.pam.okta.com&team=your-team-name</code>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('teamSelectForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var tenantUrl = document.getElementById('tenantUrl').value.trim();
+    var teamName = document.getElementById('teamName').value.trim();
+
+    if (tenantUrl && teamName) {
+      var url = window.location.pathname;
+      var params = new URLSearchParams();
+      params.set('tenant', tenantUrl);
+      params.set('team', teamName);
+      window.location.href = url + '?' + params.toString();
+    }
+  });
+
+  // Auto-lowercase inputs
+  document.getElementById('tenantUrl').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toLowerCase();
+  });
+  document.getElementById('teamName').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toLowerCase();
+  });
+</script>
+</body>
+</html>

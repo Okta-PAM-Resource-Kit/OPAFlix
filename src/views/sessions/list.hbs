@@ -1,0 +1,100 @@
+<div class="page-header">
+  <h1>{{title}}</h1>
+  <p class="subtitle">{{#if typeFilter}}Recorded {{typeFilter}} sessions{{else}}All recorded sessions{{/if}}{{#if totalCount}} ({{totalCount}} total){{/if}}</p>
+</div>
+
+{{> filterBar}}
+
+{{#if sessions.length}}
+<div class="sessions-table-container">
+  <table class="sessions-table resizable-table" id="sessionsTable">
+    <thead>
+      <tr>
+        <th class="sortable {{#if (eq @root.sortField 'timestamp')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="timestamp">
+          Date/Time <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'type')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="type">
+          Type <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'serverName')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="serverName">
+          Server <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'username')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="username">
+          Username <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'projectName')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="projectName">
+          Project <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'size')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="size">
+          Size <span class="sort-indicator"></span>
+        </th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="sessionsBody">
+      {{#each sessions}}
+      <tr>
+        <td class="date-cell">{{displayTimestamp}}</td>
+        <td class="type-cell">
+          <span class="badge badge-{{type}}">{{type}}</span>
+        </td>
+        <td class="server-cell">{{#if serverName}}{{serverName}}{{else}}N/A{{/if}}</td>
+        <td class="user-cell">{{#if username}}{{username}}{{else}}N/A{{/if}}</td>
+        <td class="project-cell">{{#if projectName}}{{projectName}}{{else}}N/A{{/if}}</td>
+        <td class="size-cell">{{displaySize}}</td>
+        <td class="action-cell">
+          {{#if (eq type 'ssh')}}
+          <a href="{{@root.playbackSshUrl}}?fileId={{fileId}}" class="btn btn-primary btn-small">Play</a>
+          {{else}}
+          <a href="{{@root.playbackRdpUrl}}?fileId={{fileId}}" class="btn btn-primary btn-small">Play</a>
+          {{/if}}
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+
+{{> pagination}}
+
+{{else}}
+<div class="empty-state">
+  <div class="empty-icon">
+    <svg width="64" height="64" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+    </svg>
+  </div>
+  {{#if hasActiveFilters}}
+  <h2>No Matching Sessions</h2>
+  <p>No sessions match your search criteria.</p>
+  <button type="button" id="clearFiltersEmptyBtn" class="btn btn-primary">Clear All Filters</button>
+  {{else}}
+  <h2>No Sessions Found</h2>
+  <p>There are no recorded sessions in the storage.</p>
+  {{/if}}
+</div>
+{{/if}}
+
+{{> advancedSearchModal}}
+
+<script src="{{asset '/js/sessionList.js'}}"></script>
+<script id="sessionListConfig" type="application/json">
+{
+  "sortField": {{{json sortField}}},
+  "sortOrder": {{{json sortOrder}}},
+  "sessionType": {{{json typeFilter}}},
+  "isRefreshing": {{#if isRefreshing}}true{{else}}false{{/if}}
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var configEl = document.getElementById('sessionListConfig');
+  var config = JSON.parse(configEl.textContent);
+  initSessionList({
+    sortField: config.sortField || 'timestamp',
+    sortOrder: config.sortOrder || 'desc',
+    sessionType: config.sessionType || 'all',
+    isRefreshing: config.isRefreshing
+  });
+});
+</script>

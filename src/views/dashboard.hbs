@@ -1,0 +1,77 @@
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p class="subtitle">Overview of your OPA session recordings</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Sessions</div>
+    <div class="stat-value">{{totalSessions}}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">SSH Sessions</div>
+    <div class="stat-value">{{sshSessions}}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">RDP Sessions</div>
+    <div class="stat-value">{{rdpSessions}}</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Storage Used</div>
+    <div class="stat-value">{{storageUsed}}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Recent Sessions</h2>
+    <div class="card-header-actions">
+      <a href="/sessions/list?type=ssh" class="btn btn-secondary btn-small">View all SSH</a>
+      <a href="/sessions/list?type=rdp" class="btn btn-secondary btn-small">View all RDP</a>
+    </div>
+  </div>
+
+  {{#if recentSessions}}
+  <div class="sessions-table-container">
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>Date/Time</th>
+          <th>Type</th>
+          <th>Server</th>
+          <th>Username</th>
+          <th>Project</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each recentSessions}}
+        <tr>
+          <td class="date-cell">{{displayTimestamp}}</td>
+          <td class="type-cell">
+            <span class="badge badge-{{type}}">{{type}}</span>
+          </td>
+          <td class="server-cell">{{#if serverName}}{{serverName}}{{else}}N/A{{/if}}</td>
+          <td class="user-cell">{{#if username}}{{username}}{{else}}N/A{{/if}}</td>
+          <td class="project-cell">{{#if projectName}}{{projectName}}{{else}}N/A{{/if}}</td>
+          <td class="action-cell">
+            <a href="/sessions/playback/{{type}}?fileId={{fileId}}" class="btn btn-primary btn-small">
+              Play
+            </a>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="empty-state">
+    <div class="empty-icon">📊</div>
+    <h2>No sessions yet</h2>
+    <p>Session recordings will appear here once they're available in your S3 bucket</p>
+  </div>
+  {{/if}}
+</div>

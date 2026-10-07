@@ -1,0 +1,40 @@
+<div class="sessions-table-container">
+  <table class="sessions-table resizable-table" id="sessionsTable">
+    <thead>
+      <tr>
+        <th class="sortable {{#if (eq @root.sortField 'timestamp')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="timestamp">
+          Date/Time <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'serverName')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="serverName">
+          Server <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'username')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="username">
+          Username <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'projectName')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="projectName">
+          Project <span class="sort-indicator"></span>
+        </th>
+        <th class="sortable {{#if (eq @root.sortField 'size')}}sort-{{@root.sortOrder}}{{/if}}" data-sort="size">
+          Size <span class="sort-indicator"></span>
+        </th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="sessionsBody">
+      {{#each sessions}}
+      <tr>
+        <td class="date-cell">{{displayTimestamp}}</td>
+        <td class="server-cell">{{#if serverName}}{{serverName}}{{else}}N/A{{/if}}</td>
+        <td class="user-cell">{{#if username}}{{username}}{{else}}N/A{{/if}}</td>
+        <td class="project-cell">{{#if projectName}}{{projectName}}{{else}}N/A{{/if}}</td>
+        <td class="size-cell">{{displaySize}}</td>
+        <td class="action-cell">
+          <a href="/sessions/playback/{{@root.sessionType}}?fileId={{fileId}}" class="btn btn-primary btn-small">
+            Play
+          </a>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

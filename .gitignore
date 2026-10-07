@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Cache
+.cache/
+temp/
+__pycache__/
+*.pyc
+*/__pycache__
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Misc
+*.bak
+*.tmp
+
+# AI
+.claude/
+/data
+
+# Temp
+tmp/
+temp/
+.temp/
+*.tmp

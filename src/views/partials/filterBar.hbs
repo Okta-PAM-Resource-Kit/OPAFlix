@@ -1,0 +1,83 @@
+<div class="filter-bar">
+  <form class="search-box" method="GET" action="/sessions/list">
+    <select id="typeFilter" name="type" class="type-select">
+      <option value="" {{#unless @root.typeFilter}}selected{{/unless}}>All Types</option>
+      <option value="ssh" {{#if (eq @root.typeFilter "ssh")}}selected{{/if}}>SSH</option>
+      <option value="rdp" {{#if (eq @root.typeFilter "rdp")}}selected{{/if}}>RDP</option>
+    </select>
+    <input type="text" name="q" id="searchInput" placeholder="Search sessions..." class="search-input" value="{{@root.searchQuery}}" />
+    <button type="submit" class="btn btn-primary btn-small">Search</button>
+    <button type="button" id="advancedSearchBtn" class="btn btn-secondary btn-small">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
+      </svg>
+      Advanced
+      <span id="filterBadge" class="filter-badge" style="display: none;">0</span>
+    </button>
+    <button type="button" id="clearFiltersBtn" class="btn btn-secondary btn-small btn-danger-outline" style="display: none;">
+      Clear Filters
+    </button>
+    <button type="button" id="refreshSessionsBtn" class="btn btn-secondary btn-small" title="Refresh session data">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 4v6h-6"></path>
+        <path d="M1 20v-6h6"></path>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+      </svg>
+      <span id="refreshBtnText">Refresh</span>
+    </button>
+    <span id="lastUpdatedIndicator" class="last-updated-indicator" style="display: none;">
+      <span class="last-updated-dot"></span>
+      <span id="lastUpdatedText">Updated just now</span>
+    </span>
+    <!-- Preserve advanced filters in simple search form -->
+    {{#if @root.advancedFilters.server}}<input type="hidden" name="server" value="{{@root.advancedFilters.server}}">{{/if}}
+    {{#if @root.advancedFilters.username}}<input type="hidden" name="username" value="{{@root.advancedFilters.username}}">{{/if}}
+    {{#if @root.advancedFilters.project}}<input type="hidden" name="project" value="{{@root.advancedFilters.project}}">{{/if}}
+    {{#if @root.advancedFilters.team}}<input type="hidden" name="team" value="{{@root.advancedFilters.team}}">{{/if}}
+    {{#if @root.advancedFilters.dateFrom}}<input type="hidden" name="dateFrom" value="{{@root.advancedFilters.dateFrom}}">{{/if}}
+    {{#if @root.advancedFilters.dateTo}}<input type="hidden" name="dateTo" value="{{@root.advancedFilters.dateTo}}">{{/if}}
+  </form>
+  <div class="sort-controls">
+    <label for="sortField">Sort by:</label>
+    <select id="sortField" class="sort-select">
+      <option value="timestamp" {{#if (eq @root.sortField "timestamp")}}selected{{/if}}>Date/Time</option>
+      <option value="type" {{#if (eq @root.sortField "type")}}selected{{/if}}>Type</option>
+      <option value="serverName" {{#if (eq @root.sortField "serverName")}}selected{{/if}}>Server</option>
+      <option value="username" {{#if (eq @root.sortField "username")}}selected{{/if}}>Username</option>
+      <option value="projectName" {{#if (eq @root.sortField "projectName")}}selected{{/if}}>Project</option>
+      <option value="teamName" {{#if (eq @root.sortField "teamName")}}selected{{/if}}>Team</option>
+      <option value="size" {{#if (eq @root.sortField "size")}}selected{{/if}}>Size</option>
+    </select>
+    <select id="sortOrder" class="sort-select">
+      <option value="desc" {{#if (eq @root.sortOrder "desc")}}selected{{/if}}>Descending</option>
+      <option value="asc" {{#if (eq @root.sortOrder "asc")}}selected{{/if}}>Ascending</option>
+    </select>
+  </div>
+</div>
+
+{{#if @root.hasActiveFilters}}
+<div class="active-filters">
+  <span class="active-filters-label">Active filters:</span>
+  {{#if @root.searchQuery}}
+    <span class="filter-tag">Search: "{{@root.searchQuery}}"</span>
+  {{/if}}
+  {{#if @root.advancedFilters.server}}
+    <span class="filter-tag">Server: {{@root.advancedFilters.server}}</span>
+  {{/if}}
+  {{#if @root.advancedFilters.username}}
+    <span class="filter-tag">Username: {{@root.advancedFilters.username}}</span>
+  {{/if}}
+  {{#if @root.advancedFilters.project}}
+    <span class="filter-tag">Project: {{@root.advancedFilters.project}}</span>
+  {{/if}}
+  {{#if @root.advancedFilters.team}}
+    <span class="filter-tag">Team: {{@root.advancedFilters.team}}</span>
+  {{/if}}
+  {{#if @root.advancedFilters.dateFrom}}
+    <span class="filter-tag">From: {{@root.advancedFilters.dateFromDisplay}}</span>
+  {{/if}}
+  {{#if @root.advancedFilters.dateTo}}
+    <span class="filter-tag">To: {{@root.advancedFilters.dateToDisplay}}</span>
+  {{/if}}
+</div>
+{{/if}}

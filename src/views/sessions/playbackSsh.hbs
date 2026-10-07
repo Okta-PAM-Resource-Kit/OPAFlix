@@ -1,0 +1,114 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.2/dist/bundle/asciinema-player.css">
+
+<div class="playback-page">
+  <div class="playback-header">
+    <a href="/sessions/list?type=ssh" class="back-link">&larr; Back to SSH Sessions</a>
+    <h1>SSH Session Playback</h1>
+  </div>
+
+  <div class="session-info">
+    <dl class="session-meta">
+      {{#if session.serverName}}
+      <div class="meta-item">
+        <dt>Server</dt>
+        <dd>{{session.serverName}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.username}}
+      <div class="meta-item">
+        <dt>Username</dt>
+        <dd>{{session.username}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.displayTimestamp}}
+      <div class="meta-item">
+        <dt>Date/Time</dt>
+        <dd>{{session.displayTimestamp}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.projectName}}
+      <div class="meta-item">
+        <dt>Project</dt>
+        <dd>{{session.projectName}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.displaySize}}
+      <div class="meta-item">
+        <dt>Size</dt>
+        <dd>{{session.displaySize}}</dd>
+      </div>
+      {{/if}}
+      <div class="meta-item meta-item-action">
+        <a href="{{castUrl}}" download="{{session.downloadFilename}}" class="btn btn-secondary btn-small">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download
+        </a>
+      </div>
+    </dl>
+  </div>
+
+  <div class="player-container">
+    <div id="asciinema-player"></div>
+  </div>
+
+  <div class="player-controls-help">
+    <p><strong>Controls:</strong></p>
+    <ul>
+      <li><kbd>space</kbd> - pause / resume</li>
+      <li><kbd>←</kbd> / <kbd>→</kbd> - rewind / fast-forward by 5 seconds</li>
+      <li><kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd> - rewind / fast-forward by 10%</li>
+      <li><kbd>0</kbd>, <kbd>1</kbd>, <kbd>2</kbd> ... <kbd>9</kbd> - jump to 0%, 10%, 20% ... 90%</li>
+      <li><kbd>,</kbd> / <kbd>.</kbd> - step back / forward, a frame at a time (when paused)</li>
+      <li><kbd>f</kbd> - toggle fullscreen mode</li>
+      <li><kbd>m</kbd> - mute / unmute audio (when audio track present)</li>
+    </ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.2/dist/bundle/asciinema-player.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var castUrl = {{{json castUrl}}};
+    var playerContainer = document.getElementById('asciinema-player');
+
+    // Show loading state
+    playerContainer.innerHTML = '<div class="player-loading">Loading session recording...</div>';
+
+    // Fetch cast data from S3 presigned URL and create player
+    fetch(castUrl)
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Failed to load recording (HTTP ' + response.status + ')');
+        }
+        return response.text();
+      })
+      .then(function(castData) {
+        // Clear loading state
+        playerContainer.innerHTML = '';
+
+        AsciinemaPlayer.create(
+          { data: castData },
+          playerContainer,
+          {
+            fit: 'width',
+            theme: 'monokai',
+            idleTimeLimit: 2,
+            speed: 1,
+            preload: true,
+            poster: 'npt:0:0'
+          }
+        );
+      })
+      .catch(function(error) {
+        playerContainer.innerHTML = '<div class="player-error">' +
+          '<p>Unable to load session recording.</p>' +
+          '<p>' + error.message + '</p>' +
+          '<p>The URL may have expired. <a href="javascript:location.reload()">Reload the page</a> to get a new URL.</p>' +
+          '</div>';
+      });
+  });
+</script>

@@ -1,0 +1,95 @@
+<div class="graph-page">
+  <div class="graph-page-header">
+    <div class="page-header">
+      <div class="page-header-row">
+        <h1>Infrastructure Graph</h1>
+      </div>
+      <p class="page-subtitle">OPA topology visualization - Gateways, Projects, and Servers</p>
+    </div>
+
+    {{#if opaEnabled}}
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-value">{{stats.gatewayCount}}</div>
+        <div class="stat-label">Gateways</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{stats.projectCount}}</div>
+        <div class="stat-label">Projects</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{stats.serverCount}}</div>
+        <div class="stat-label">Servers</div>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
+{{#if fetchErrors}}
+  <div class="card error-card">
+    <div class="card-header">
+      <h2>Fetch Errors</h2>
+    </div>
+    <div class="card-content">
+      <div class="error-list">
+        {{#each fetchErrors}}
+        <div class="error-item">
+          <strong>Failed to fetch {{this.type}}:</strong> {{this.message}}
+          <br><small>Endpoint: {{this.endpoint}}</small>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+{{/if}}
+
+{{#if opaEnabled}}
+  <div class="card graph-card">
+    <div class="card-header">
+      <div class="graph-header-left">
+        <h2>Topology Diagram</h2>
+        <p class="card-description">Interactive graph: drag nodes, scroll to zoom, click for details</p>
+      </div>
+    </div>
+    <div class="card-content graph-card-content">
+      <!-- Hidden data element for graph data -->
+      <div id="graph-data" data-graph="{{graphData}}" style="display: none;"></div>
+
+      <!-- Single Graph Container -->
+      <div id="graph-root" class="reactflow-container"></div>
+    </div>
+  </div>
+
+  <!-- React 18 from cdnjs (allowed by CSP) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha512-QVs8Lo43F9lSuBykadDb0oSXDL/BbZ588urWVCRwSIoewQv/Ewg1f84mK3U790bZ0FfhFa1YSQUmIhG+pIRKeg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" integrity="sha512-6a1107rTlA4gYpgHAqbwLAtxmWipBdJFcq8y5S/aTge3Bp+VAklABm2LO+Kg51vOWR9JMZq1Ovjl5tpluNpTeQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- ReactFlow CSS from jsdelivr (allowed by CSP) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xyflow/react@12/dist/style.css" crossorigin="anonymous">
+
+  <!-- Graph Bundle -->
+  <script src="{{asset '/js/graph-bundle.js'}}"></script>
+
+{{else}}
+  <div class="card">
+    <div class="card-content">
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <h3>OPA API Not Configured</h3>
+        <p>Graph visualization requires OPA API access to fetch infrastructure data.</p>
+        <p>Configure the following settings in the <a href="/config">Configuration</a> page:</p>
+        <ul class="config-list">
+          <li><strong>Team Name</strong> - Your OPA team name</li>
+          <li><strong>API Key ID</strong> - Service User API Key ID</li>
+          <li><strong>API Secret</strong> - Service User API Secret</li>
+        </ul>
+        <p>The API URL is automatically derived from the team name and preview/production setting.</p>
+      </div>
+    </div>
+  </div>
+{{/if}}
+</div>

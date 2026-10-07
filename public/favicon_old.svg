@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#B20710"/>
+      <stop offset="50%" stop-color="#E50914"/>
+      <stop offset="100%" stop-color="#B20710"/>
+    </linearGradient>
+  </defs>
+  <text
+    x="50%"
+    y="50%"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="url(#redGrad)"
+    font-family="Arial Black, Helvetica, sans-serif"
+    font-size="28"
+    font-weight="900">O</text>
+</svg>

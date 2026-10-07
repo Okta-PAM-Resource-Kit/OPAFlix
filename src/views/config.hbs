@@ -1,0 +1,472 @@
+<div class="page-header">
+  <h1>Configuration</h1>
+  {{#if isSingleTenant}}
+  <p class="subtitle" style="font-size:16px">Single-Tenant Mode</p>
+  {{else}}
+  <p class="subtitle" style="font-size:16px">Manage settings for <strong>{{tenant.teamName}}</strong></p>
+  {{/if}}
+</div>
+
+{{#if readOnly}}
+<div class="config-readonly-banner">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="8" x2="12" y2="12"></line>
+    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+  </svg>
+  <div>
+    <strong>Read-Only Mode</strong>
+    <p>Configuration is managed via environment variables in single-tenant mode. To update settings, modify the <code>.env</code> file and restart the application.</p>
+  </div>
+</div>
+{{/if}}
+
+<div id="configAlert" class="config-alert" style="display: none;">
+  <span id="configAlertText"></span>
+</div>
+
+<form id="configForm" class="config-form">
+
+  <div class="config-grid">
+    <!-- Left Column: Editable Sections (or read-only in single-tenant mode) -->
+    <div class="config-column config-column--main">
+
+  <!-- AWS Configuration -->
+  <section class="config-section">
+    <div class="config-section__header">
+      <h2>AWS Configuration</h2>
+      {{#if readOnly}}
+      <span class="config-tag config-tag--readonly">Read-Only</span>
+      {{else}}
+      <span class="config-tag config-tag--editable">Editable</span>
+      {{/if}}
+    </div>
+
+    {{#if readOnly}}
+    <!-- Single-Tenant Read-Only View -->
+    <div class="config-row">
+      <label class="config-row__label">Authentication</label>
+      <div class="config-row__field">
+        <span class="config-readonly-value">
+          {{#if config.aws.rolesAnywhereTrustAnchorArn}}IAM Roles Anywhere{{else}}Access Keys{{/if}}
+        </span>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">Region</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.region}}" readonly>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">S3 Bucket</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.bucket}}" readonly>
+      </div>
+    </div>
+
+    {{#if config.aws.rolesAnywhereTrustAnchorArn}}
+    <!-- IAM Roles Anywhere fields (read-only) -->
+    <div class="config-row">
+      <label class="config-row__label">IAM Role ARN</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.roleArn}}" readonly>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">Trust Anchor ARN</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.rolesAnywhereTrustAnchorArn}}" readonly>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">Profile ARN</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.rolesAnywhereProfileArn}}" readonly>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">Certificate</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.rolesAnywhereCertificateMasked}}" readonly>
+        {{#if config.aws.certificateDetails}}
+        <div class="config-cert-info config-cert-info--{{config.aws.certificateDetails.status}}">
+          <span class="config-cert-info__cn">CN: <strong>{{config.aws.certificateDetails.cn}}</strong></span>
+          <span class="config-cert-info__expiry">
+            Expires: {{config.aws.certificateDetails.validTo}}
+            {{#if (eq config.aws.certificateDetails.status "expired")}}
+            <span class="config-cert-badge config-cert-badge--expired">Expired</span>
+            {{else if (eq config.aws.certificateDetails.status "expiring-soon")}}
+            <span class="config-cert-badge config-cert-badge--warning">{{config.aws.certificateDetails.daysUntilExpiry}} days left</span>
+            {{else}}
+            <span class="config-cert-badge config-cert-badge--valid">{{config.aws.certificateDetails.daysUntilExpiry}} days left</span>
+            {{/if}}
+          </span>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">Private Key</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.rolesAnywherePrivateKeyMasked}}" readonly>
+      </div>
+    </div>
+    {{else}}
+    <!-- Access Keys fields (read-only) -->
+    <div class="config-row">
+      <label class="config-row__label">Access Key ID</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.accessKeyId}}" readonly>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label">Secret Access Key</label>
+      <div class="config-row__field">
+        <input type="text" class="config-input" value="{{config.aws.secretAccessKeyMasked}}" readonly>
+      </div>
+    </div>
+    {{/if}}
+
+    {{else}}
+    <!-- Multi-Tenant Editable View -->
+
+    <!-- Authentication Method Selector -->
+    <div class="config-row">
+      <label class="config-row__label" for="awsAuthMethod">Authentication Method</label>
+      <div class="config-row__field">
+        <select id="awsAuthMethod" name="aws.authMethod" class="config-input config-select">
+          <option value="accessKey" {{#unless config.aws.rolesAnywhereTrustAnchorArn}}selected{{/unless}}>Access Keys</option>
+          <option value="rolesAnywhere" {{#if config.aws.rolesAnywhereTrustAnchorArn}}selected{{/if}}>IAM Roles Anywhere</option>
+        </select>
+        <span class="config-hint">Choose how Opaflix authenticates with AWS S3.</span>
+      </div>
+    </div>
+
+    <!-- Common Fields (shown for both methods) -->
+    <div class="config-row">
+      <label class="config-row__label" for="awsRegion">Region</label>
+      <div class="config-row__field">
+        <div class="autocomplete-wrapper">
+          <input type="text" id="awsRegion" name="aws.region" class="config-input autocomplete-input"
+                 value="{{config.aws.region}}" placeholder="us-east-1" autocomplete="off">
+          <div class="autocomplete-dropdown" id="awsRegion-dropdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label" for="awsBucket">S3 Bucket</label>
+      <div class="config-row__field">
+        <input type="text" id="awsBucket" name="aws.bucket" class="config-input" value="{{config.aws.bucket}}" placeholder="my-bucket">
+      </div>
+    </div>
+
+    <!-- Access Keys Fields -->
+    <div id="accessKeyFields" class="config-auth-fields">
+      <div class="config-row">
+        <label class="config-row__label" for="awsAccessKeyId">Access Key ID</label>
+        <div class="config-row__field">
+          <input type="text" id="awsAccessKeyId" name="aws.accessKeyId" class="config-input" value="{{config.aws.accessKeyId}}" placeholder="AKIA...">
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label class="config-row__label" for="awsSecretAccessKey">Secret Access Key</label>
+        <div class="config-row__field">
+          <div class="config-input-group">
+            <input type="password" id="awsSecretAccessKey" name="aws.secretAccessKey" class="config-input" placeholder="Enter new value or leave empty">
+            <button type="button" class="config-reveal-btn" data-target="awsSecretAccessKey">
+              <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <span class="config-hint">Current: {{config.aws.secretAccessKeyMasked}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- IAM Roles Anywhere Fields -->
+    <div id="rolesAnywhereFields" class="config-auth-fields" style="display: none;">
+      <p class="config-subsection__note">Authenticate using X.509 certificates instead of static credentials. Recommended for external deployments (Vercel, on-prem). See <a href="https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html" target="_blank">AWS documentation</a>.</p>
+
+      <div class="config-row">
+        <label class="config-row__label" for="awsRoleArn">IAM Role ARN</label>
+        <div class="config-row__field">
+          <input type="text" id="awsRoleArn" name="aws.roleArn" class="config-input" value="{{config.aws.roleArn}}" placeholder="arn:aws:iam::123456789012:role/OpaflixS3Role">
+          <span class="config-hint">IAM role with S3 read permissions.</span>
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label class="config-row__label" for="awsRolesAnywhereTrustAnchorArn">Trust Anchor ARN</label>
+        <div class="config-row__field">
+          <input type="text" id="awsRolesAnywhereTrustAnchorArn" name="aws.rolesAnywhereTrustAnchorArn" class="config-input" value="{{config.aws.rolesAnywhereTrustAnchorArn}}" placeholder="arn:aws:rolesanywhere:region:account:trust-anchor/id">
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label class="config-row__label" for="awsRolesAnywhereProfileArn">Profile ARN</label>
+        <div class="config-row__field">
+          <input type="text" id="awsRolesAnywhereProfileArn" name="aws.rolesAnywhereProfileArn" class="config-input" value="{{config.aws.rolesAnywhereProfileArn}}" placeholder="arn:aws:rolesanywhere:region:account:profile/id">
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label class="config-row__label" for="awsRolesAnywhereCertificate">Certificate (PEM)</label>
+        <div class="config-row__field">
+          <textarea id="awsRolesAnywhereCertificate" name="aws.rolesAnywhereCertificate" class="config-input config-textarea" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----" rows="4"></textarea>
+          <div class="config-file-upload">
+            <label for="certFileUpload" class="config-file-upload__btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload .pem file
+            </label>
+            <input type="file" id="certFileUpload" accept=".pem,.crt,.cer" style="display: none;">
+          </div>
+          <div id="certificateInfoDisplay">
+            {{#if config.aws.certificateDetails}}
+            <div class="config-cert-info config-cert-info--{{config.aws.certificateDetails.status}}">
+              <span class="config-cert-info__cn">CN: <strong>{{config.aws.certificateDetails.cn}}</strong></span>
+              <span class="config-cert-info__expiry">
+                Expires: {{config.aws.certificateDetails.validTo}}
+                {{#if (eq config.aws.certificateDetails.status "expired")}}
+                <span class="config-cert-badge config-cert-badge--expired">Expired</span>
+                {{else if (eq config.aws.certificateDetails.status "expiring-soon")}}
+                <span class="config-cert-badge config-cert-badge--warning">{{config.aws.certificateDetails.daysUntilExpiry}} days left</span>
+                {{else}}
+                <span class="config-cert-badge config-cert-badge--valid">{{config.aws.certificateDetails.daysUntilExpiry}} days left</span>
+                {{/if}}
+              </span>
+            </div>
+            {{else}}
+            <span class="config-hint">Current: {{config.aws.rolesAnywhereCertificateMasked}}</span>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label class="config-row__label" for="awsRolesAnywherePrivateKey">Private Key (PEM)</label>
+        <div class="config-row__field">
+          <textarea id="awsRolesAnywherePrivateKey" name="aws.rolesAnywherePrivateKey" class="config-input config-textarea" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----" rows="4"></textarea>
+          <div class="config-file-upload">
+            <label for="keyFileUpload" class="config-file-upload__btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload .pem file
+            </label>
+            <input type="file" id="keyFileUpload" accept=".pem,.key" style="display: none;">
+            <span class="config-hint">Current: {{config.aws.rolesAnywherePrivateKeyMasked}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{/if}}
+  </section>
+
+  <!-- OPA API Configuration -->
+  <section class="config-section">
+    <div class="config-section__header">
+      <h2>Okta Privileged Access API Configuration</h2>
+      {{#if readOnly}}
+      <span class="config-tag config-tag--readonly">Read-Only</span>
+      {{else}}
+      <span class="config-tag config-tag--optional">Optional</span>
+      <span class="config-section__note">For graph visualization and filter prepopulation. Requires an Okta Privileged Access <a href="https://help.okta.com/oie/en-us/content/topics/privileged-access/pam-service-users.htm" target="_blank">Service User</a>.</span>
+      {{/if}}
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label" for="opaApiId">API Key ID</label>
+      <div class="config-row__field">
+        <input type="text" id="opaApiId" name="opaApi.keyId" class="config-input" value="{{config.opaApi.keyId}}" placeholder="UUID format" {{#if readOnly}}readonly{{/if}}>
+      </div>
+    </div>
+
+    <div class="config-row">
+      <label class="config-row__label" for="opaApiSecret">API Secret</label>
+      <div class="config-row__field">
+        {{#if readOnly}}
+        <input type="text" class="config-input" value="{{config.opaApi.keySecretMasked}}" readonly>
+        {{else}}
+        <div class="config-input-group">
+          <input type="password" id="opaApiSecret" name="opaApi.keySecret" class="config-input" placeholder="Enter new value or leave empty">
+          <button type="button" class="config-reveal-btn" data-target="opaApiSecret">
+            <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <svg class="icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
+        <span class="config-hint">Current: {{config.opaApi.keySecretMasked}}</span>
+        {{/if}}
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Actions (hidden in read-only mode) -->
+  {{#unless readOnly}}
+  <div class="config-actions">
+    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+    <button type="submit" id="saveBtn" class="btn btn-primary">
+      <span id="saveBtnText">Save Changes</span>
+      <svg id="saveBtnSpinner" class="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" transform="rotate(-90 12 12)"/>
+      </svg>
+    </button>
+  </div>
+  {{/unless}}
+
+    </div>
+
+    <!-- Right Column: Read-Only Sections -->
+    <div class="config-column config-column--side">
+
+      <section class="config-section">
+        <div class="config-section__header">
+          {{#if isSingleTenant}}
+          <h2>Application Details</h2>
+          {{else}}
+          <h2>Team Details</h2>
+          {{/if}}
+          <span class="config-tag config-tag--readonly">Read-Only</span>
+          {{#unless isSingleTenant}}
+          <span class="config-section__note">Contact the application administrator to make changes.</span>
+          {{/unless}}
+        </div>
+        <div class="config-row">
+          <label class="config-row__label">Tenant URL</label>
+          <div class="config-row__field">
+            <span class="config-readonly-value">{{tenant.tenantUrl}}</span>
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-row__label">Team Name</label>
+          <div class="config-row__field">
+            <span class="config-readonly-value">{{tenant.teamName}}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Okta IDP Details -->
+      <section class="config-section">
+        <div class="config-section__header">
+          <h2>Okta IDP Details</h2>
+          <span class="config-tag config-tag--readonly">Read-Only</span>
+          {{#unless isSingleTenant}}
+          <span class="config-section__note">Contact the application administrator to make changes.</span>
+          {{/unless}}
+        </div>
+
+        <div class="config-row">
+          <label class="config-row__label">Issuer URL</label>
+          <div class="config-row__field">
+            <input type="text" class="config-input" value="{{config.okta.issuer}}" readonly>
+          </div>
+        </div>
+
+        <div class="config-row">
+          <label class="config-row__label">Client ID</label>
+          <div class="config-row__field">
+            <input type="text" class="config-input" value="{{config.okta.clientId}}" readonly>
+          </div>
+        </div>
+
+        <div class="config-row">
+          <label class="config-row__label">Client Secret</label>
+          <div class="config-row__field">
+            <input type="text" class="config-input" value="{{config.okta.clientSecretMasked}}" readonly>
+          </div>
+        </div>
+      </section>
+
+      <!-- Advanced Settings (Collapsible) -->
+      <section class="config-section config-section--collapsible">
+        <button type="button" class="config-subsection__toggle" id="advancedToggle" data-target="advancedContent">
+          <svg class="config-subsection__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          <h2>Advanced Settings</h2>
+        </button>
+        <div id="advancedContent" class="config-subsection__content" style="display: none;">
+          <div class="config-row">
+            <label class="config-row__label" for="sessionIndexRefresh">Session Index Refresh</label>
+            <div class="config-row__field">
+              <div class="config-input-group config-input-group--inline">
+                <input type="number" id="sessionIndexRefresh" name="opaflix.sessionIndexRefreshMinutes"
+                       class="config-input config-input--small"
+                       value="{{config.opaflix.sessionIndexRefreshMinutes}}"
+                       min="1" max="60" placeholder="15"
+                       {{#if readOnly}}readonly{{/if}}>
+                <span class="config-input-suffix">minutes</span>
+              </div>
+              <span class="config-hint">How often to check for new sessions (default: 15 min)<br/>⚠️ Changing this value may impact performance, especially with large S3 buckets.</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label class="config-row__label" for="defaultPageSize">Default Page Size</label>
+            <div class="config-row__field">
+              <div class="config-input-group config-input-group--inline">
+                <input type="number" id="defaultPageSize" name="opaflix.defaultPageSize"
+                       class="config-input config-input--small"
+                       value="{{config.opaflix.defaultPageSize}}"
+                       min="10" max="100" placeholder="50"
+                       {{#if readOnly}}readonly{{/if}}>
+                <span class="config-input-suffix">sessions per page</span>
+              </div>
+              <span class="config-hint">Number of sessions shown per page (default: 50, range: 10-100)</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label class="config-row__label" for="presignedUrlExpiry">S3 Presigned URL Expiry</label>
+            <div class="config-row__field">
+              <div class="config-input-group config-input-group--inline">
+                <input type="number" id="presignedUrlExpiry" name="aws.presignedUrlExpiryMinutes"
+                       class="config-input config-input--small"
+                       value="{{config.aws.presignedUrlExpiryMinutes}}"
+                       min="5" max="720" placeholder="240"
+                       {{#if readOnly}}readonly{{/if}}>
+                <span class="config-input-suffix">minutes</span>
+              </div>
+              <span class="config-hint">How long playback URLs remain valid (default: 240 min = 4 hours)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+</form>
+
+{{#unless readOnly}}
+<!-- X.509 Certificate Parser Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/11.1.0/jsrsasign-all-min.js" integrity="sha384-vbfVWK2rJ9x1Xsycv0IIV02oWFwkOZ5Ohb/cQGU2ldysPOlCR4OtdM1nvOZFbpzk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{{/unless}}

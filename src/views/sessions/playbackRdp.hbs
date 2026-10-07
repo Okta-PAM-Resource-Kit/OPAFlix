@@ -1,0 +1,125 @@
+<div class="playback-page">
+  <div class="playback-header">
+    <a href="/sessions/list?type=rdp" class="back-link">&larr; Back to RDP Sessions</a>
+    <h1>RDP Session Playback</h1>
+  </div>
+
+  <div class="session-info">
+    <dl class="session-meta">
+      {{#if session.serverName}}
+      <div class="meta-item">
+        <dt>Server</dt>
+        <dd>{{session.serverName}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.username}}
+      <div class="meta-item">
+        <dt>Username</dt>
+        <dd>{{session.username}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.displayTimestamp}}
+      <div class="meta-item">
+        <dt>Date/Time</dt>
+        <dd>{{session.displayTimestamp}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.projectName}}
+      <div class="meta-item">
+        <dt>Project</dt>
+        <dd>{{session.projectName}}</dd>
+      </div>
+      {{/if}}
+      {{#if session.displaySize}}
+      <div class="meta-item">
+        <dt>Size</dt>
+        <dd>{{session.displaySize}}</dd>
+      </div>
+      {{/if}}
+      <div class="meta-item meta-item-action">
+        <a href="{{videoUrl}}" download="{{session.downloadFilename}}" class="btn btn-secondary btn-small">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download
+        </a>
+      </div>
+    </dl>
+  </div>
+
+  <div class="video-container">
+    <video id="rdp-player" controls preload="metadata">
+      <source src="{{videoUrl}}" type="video/x-matroska">
+      Your browser does not support MKV video playback.
+    </video>
+  </div>
+
+  <div class="player-controls-help">
+    <p><strong>Controls:</strong> </p>
+    <ul>
+      <li><kbd>space</kbd> - pause / resume</li>
+      <li><kbd>←</kbd> / <kbd>→</kbd> - rewind / fast-forward</li>
+      <li><kbd>f</kbd> - toggle fullscreen mode</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var video = document.getElementById('rdp-player');
+
+    // Handle playback errors
+    video.addEventListener('error', function(e) {
+      var errorContainer = document.createElement('div');
+      errorContainer.className = 'video-error';
+
+      // Check if it might be a URL expiration issue
+      var errorMessage = '<p>Unable to play this video.</p>';
+
+      if (video.error) {
+        switch (video.error.code) {
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = '<p>Network error loading video.</p>' +
+              '<p>The URL may have expired. <a href="javascript:location.reload()">Reload the page</a> to get a new URL.</p>';
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = '<p>Your browser may not support MKV format.</p>' +
+              '<p>Try using Chrome, Firefox, or Edge.</p>';
+            break;
+          default:
+            errorMessage = '<p>Unable to play this video.</p>' +
+              '<p>Try <a href="javascript:location.reload()">reloading the page</a> or using a different browser.</p>';
+        }
+      }
+
+      errorContainer.innerHTML = errorMessage;
+      video.parentNode.appendChild(errorContainer);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          video.paused ? video.play() : video.pause();
+          break;
+        case 'f':
+        case 'F':
+          if (video.requestFullscreen) {
+            video.requestFullscreen();
+          }
+          break;
+        case 'ArrowLeft':
+          video.currentTime = Math.max(0, video.currentTime - 10);
+          break;
+        case 'ArrowRight':
+          video.currentTime = Math.min(video.duration, video.currentTime + 10);
+          break;
+      }
+    });
+  });
+</script>

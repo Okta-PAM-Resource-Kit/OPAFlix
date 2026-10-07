@@ -1,0 +1,65 @@
+# Dependencies (will be installed in container)
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Cache and temp files
+.cache/
+temp/
+tmp/
+*.tmp
+*.bak
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Documentation (not needed at runtime)
+*.md
+docs/
+
+# Docker files (prevent recursive issues)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# AI and development tools
+.claude/
+.vscode/
+
+# Scripts
+scripts/
+
+# Test files
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
+
+# Data folder
+data/

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Opaflix - Session Replay Tool">
+  <meta name="csrf-token" content="{{csrfToken}}">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>{{#if title}}{{title}} - {{/if}}Opaflix</title>
+  <link rel="stylesheet" href="{{asset '/css/main.css'}}">
+  <script>
+  (function(){var c=document.cookie.match(/(?:^|; )theme=([^;]*)/);var p=c?c[1]:'auto';var t=p;if(p==='auto'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+  {{#if pageStyles}}
+  {{{pageStyles}}}
+  {{/if}}
+</head>
+<body>
+  {{#if isAuthenticated}}
+  <div class="app-layout">
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-logo" aria-label="Opaflix">
+          <svg width="200" height="50" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#B20710"/>
+                <stop offset="50%" stop-color="#E50914"/>
+                <stop offset="100%" stop-color="#B20710"/>
+              </linearGradient>
+            </defs>
+            <text 
+              x="50%" 
+              y="60%" 
+              text-anchor="middle" 
+              fill="url(#redGradient)" 
+              font-family="Arial Black, Helvetica, sans-serif" 
+              font-size="120" 
+              letter-spacing="8"
+              dominant-baseline="middle">
+              Opaflix
+            </text>
+          </svg>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/" class="sidebar-nav-item {{#if (eq activeTab 'dashboard')}}active{{/if}}">
+          <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+          </svg>
+          <span class="sidebar-nav-text">Dashboard</span>
+        </a>
+
+        <a href="/sessions/list" class="sidebar-nav-item {{#if (eq activeTab 'all')}}active{{/if}}">
+          <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span class="sidebar-nav-text">All Sessions</span>
+        </a>
+
+        <a href="/sessions/list?type=ssh" class="sidebar-nav-item {{#if (eq activeTab 'ssh')}}active{{/if}}">
+          <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+          </svg>
+          <span class="sidebar-nav-text">SSH Sessions</span>
+        </a>
+
+        <a href="/sessions/list?type=rdp" class="sidebar-nav-item {{#if (eq activeTab 'rdp')}}active{{/if}}">
+          <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <!-- Monitor -->
+            <rect x="2" y="2" width="16" height="12" rx="1" fill="currentColor"/>
+            <rect x="3" y="3" width="14" height="10" fill="none" stroke="white" stroke-width="0.5"/>
+            <!-- Base -->
+            <rect x="8" y="15" width="4" height="1" fill="currentColor"/>
+            <rect x="7" y="16" width="6" height="1" rx="0.5" fill="currentColor"/>
+            <!-- Connection arrows -->
+            <path d="M 10 7 L 11.5 8.5 M 10 7 L 8.5 8.5 M 10 10 L 11.5 8.5 M 10 10 L 8.5 8.5" stroke="white" stroke-width="0.8" stroke-linecap="round"/>
+          </svg>
+          <span class="sidebar-nav-text">RDP Sessions</span>
+        </a>
+
+        <a href="/graph" class="sidebar-nav-item {{#if (eq activeTab 'graph')}}active{{/if}}">
+          <svg class="sidebar-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span class="sidebar-nav-text">Graph</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-powered-by">
+          <!-- <a class="logo" href="" target="_blank" rel="noopener">
+            <svg...></svg>
+          </a> -->
+          <p class="powered-by-text">
+            <strong>Opaflix</strong> is an opensource community project, is not an official Okta product and is not endorsed, supported or maintained by Okta.
+            <br/><br/>
+            Made by <a href="https://iam.fabiograsso.net/opaflix" target="_blank">Fabio Grasso</a> — <a href="https://github.com/fabiograsso/opaflix" target="_blank">GitHub</a>
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-container">
+      <!-- Top Header -->
+      <header class="top-header">
+        <button class="burger-menu" id="burgerMenu" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+        </button>
+        <div class="top-header-spacer"></div>
+        <div class="top-header-actions">
+          <button class="header-icon-btn theme-toggle" id="themeToggle" type="button" title="Toggle theme" aria-label="Toggle theme">
+            <svg class="theme-icon theme-icon--light" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+            </svg>
+            <svg class="theme-icon theme-icon--dark" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+            </svg>
+            <svg class="theme-icon theme-icon--auto" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 2v12a6 6 0 010-12z"/>
+            </svg>
+          </button>
+          <a href="#" class="header-icon-btn" title="Help">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+          </a>
+          <a href="/config" class="header-icon-btn" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+            </svg>
+          </a>
+          <div class="user-menu" id="userMenu">
+            <button class="user-menu-trigger" id="userMenuTrigger" type="button" aria-expanded="false" aria-haspopup="true">
+              <span class="user-avatar">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+              <div class="user-info">
+                <span class="user-name-header">{{user.name}}</span>
+                {{#if isMultitenant}}
+                {{#if tenant}}
+                <span class="tenant-name-header">{{tenant.teamName}}</span>
+                {{/if}}
+                {{/if}}
+              </div>
+              <svg class="chevron-down" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+              <form action="/logout" method="POST" class="logout-form">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <button type="submit" class="user-dropdown-item logout-btn">Sign out</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        {{#if flashMessage}}
+        <div class="alert alert-{{flashType}}">
+          {{flashMessage}}
+        </div>
+        {{/if}}
+
+        {{{body}}}
+      </main>
+    </div>
+  </div>
+  {{else}}
+  <!-- Login Page -->
+  <div class="login-page">
+    <div class="login-container">
+      <div class="login-header">
+        <a href="/" class="sidebar-logo" aria-label="Opaflix">
+          <svg width="200" height="50" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#B20710"/>
+                <stop offset="50%" stop-color="#E50914"/>
+                <stop offset="100%" stop-color="#B20710"/>
+              </linearGradient>
+            </defs>
+            <text 
+              x="50%" 
+              y="60%" 
+              text-anchor="middle" 
+              fill="url(#redGradient)" 
+              font-family="Arial Black, Helvetica, sans-serif" 
+              font-size="120" 
+              letter-spacing="8"
+              dominant-baseline="middle">
+              Opaflix
+            </text>
+          </svg>
+        </a>
+        <p class="login-subtitle">Session Replay for Okta Privileged Access</p>
+      </div>
+
+      {{{body}}}
+
+      <div class="login-footer">
+        <p>Opaflix</p>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if scripts}}
+  {{{scripts}}}
+  {{/if}}
+
+  {{#if isAuthenticated}}
+  <script>
+  (function() {
+    // Theme toggle
+    var themeToggle = document.getElementById('themeToggle');
+    var themeStates = ['auto', 'light', 'dark'];
+
+    function getStoredTheme() {
+      var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+      return match ? match[1] : 'auto';
+    }
+
+    function setThemeCookie(value) {
+      var d = new Date();
+      d.setFullYear(d.getFullYear() + 1);
+      document.cookie = 'theme=' + value + ';path=/;expires=' + d.toUTCString() + ';SameSite=Lax';
+    }
+
+    function applyTheme(preference) {
+      var resolved = preference;
+      if (preference === 'auto') {
+        resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', resolved);
+      updateToggleIcon(preference);
+    }
+
+    function updateToggleIcon(preference) {
+      if (!themeToggle) return;
+      themeToggle.querySelectorAll('.theme-icon').forEach(function(icon) {
+        icon.style.display = 'none';
+      });
+      var suffix = preference === 'auto' ? 'auto' : preference === 'dark' ? 'dark' : 'light';
+      var active = themeToggle.querySelector('.theme-icon--' + suffix);
+      if (active) active.style.display = 'block';
+      var labels = { auto: 'Theme: Auto', light: 'Theme: Light', dark: 'Theme: Dark' };
+      themeToggle.setAttribute('title', labels[preference] || 'Toggle theme');
+    }
+
+    if (themeToggle) {
+      var currentPref = getStoredTheme();
+      applyTheme(currentPref);
+
+      themeToggle.addEventListener('click', function() {
+        var current = getStoredTheme();
+        var idx = themeStates.indexOf(current);
+        var next = themeStates[(idx + 1) % themeStates.length];
+        setThemeCookie(next);
+        applyTheme(next);
+      });
+
+      // Listen for OS theme changes when in auto mode
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (getStoredTheme() === 'auto') {
+          applyTheme('auto');
+        }
+      });
+    }
+
+    // User menu dropdown
+    const userMenu = document.getElementById('userMenu');
+    const userMenuTrigger = document.getElementById('userMenuTrigger');
+    const userDropdown = document.getElementById('userDropdown');
+
+    if (userMenuTrigger && userDropdown) {
+      userMenuTrigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = userMenu.classList.contains('open');
+        userMenu.classList.toggle('open');
+        userMenuTrigger.setAttribute('aria-expanded', !isOpen);
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!userMenu.contains(e.target)) {
+          userMenu.classList.remove('open');
+          userMenuTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // Close dropdown on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && userMenu.classList.contains('open')) {
+          userMenu.classList.remove('open');
+          userMenuTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    // Mobile burger menu
+    const burgerMenu = document.getElementById('burgerMenu');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleMobileMenu() {
+      const isOpen = sidebar.classList.contains('mobile-open');
+      sidebar.classList.toggle('mobile-open');
+      sidebarOverlay.classList.toggle('active');
+      burgerMenu.classList.toggle('active');
+      burgerMenu.setAttribute('aria-expanded', !isOpen);
+      document.body.classList.toggle('sidebar-open');
+    }
+
+    function closeMobileMenu() {
+      sidebar.classList.remove('mobile-open');
+      sidebarOverlay.classList.remove('active');
+      burgerMenu.classList.remove('active');
+      burgerMenu.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('sidebar-open');
+    }
+
+    if (burgerMenu && sidebar && sidebarOverlay) {
+      burgerMenu.addEventListener('click', toggleMobileMenu);
+      sidebarOverlay.addEventListener('click', closeMobileMenu);
+
+      // Close sidebar when clicking a nav link on mobile
+      sidebar.querySelectorAll('.sidebar-nav-item').forEach(function(link) {
+        link.addEventListener('click', function() {
+          if (window.innerWidth <= 768) {
+            closeMobileMenu();
+          }
+        });
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('mobile-open')) {
+          closeMobileMenu();
+        }
+      });
+    }
+  })();
+  </script>
+  {{/if}}
+</body>
+</html>

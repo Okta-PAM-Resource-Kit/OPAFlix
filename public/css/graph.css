@@ -1,0 +1,1069 @@
+/* ===========================================
+   Graph Page Styles (ReactFlow)
+   =========================================== */
+
+/* Graph Page Full Height Layout */
+.graph-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height) - 64px);
+  min-height: 770px;
+}
+
+/* Single graph mode - fill available height */
+.graph-page .graph-card-content {
+  padding: 0;
+}
+
+/* Page Header Row with inline badge */
+.page-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-header-row h1 {
+  margin: 0;
+}
+
+
+/* Page Header */
+.graph-page-header {
+  flex-shrink: 0;
+}
+
+.graph-page-header .page-header {
+  margin-bottom: 16px;
+}
+
+/* Stats Cards */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stats-cards .stat-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.stats-cards .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--okta-blue);
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.stats-cards .stat-label {
+  font-size: 13px;
+  color: var(--okta-gray-600);
+  font-weight: 500;
+}
+
+/* Graph Card */
+.graph-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+  min-height: 600px;
+}
+
+.graph-card .card-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.graph-header-left {
+  flex: 1;
+}
+
+.graph-header-left h2 {
+  margin: 0 0 4px 0;
+}
+
+.graph-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.card-description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--okta-gray-600);
+}
+
+/* Graph Controls */
+.graph-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.graph-controls .btn {
+  min-width: auto;
+}
+
+.graph-controls .btn.active {
+  background-color: var(--okta-blue);
+  color: var(--color-text-inverse);
+  border-color: var(--okta-blue);
+}
+
+.graph-controls .btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.graph-controls-divider {
+  width: 1px;
+  background-color: var(--color-border);
+  margin: 0 4px;
+}
+
+/* ReactFlow Container */
+.reactflow-container {
+  width: 100%;
+  flex: 1;
+  min-height: 300px;
+  background: var(--color-surface-alt);
+  border-radius: var(--border-radius);
+}
+
+/* Custom Node Styles */
+.react-flow__node-gateway,
+.react-flow__node-project,
+.react-flow__node-projectOrphan,
+.react-flow__node-server {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ========================
+   Circle Node Base Styles
+   ======================== */
+
+.circle-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.circle-node:hover {
+  transform: scale(1.05);
+}
+
+.circle-node-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.15s ease;
+}
+
+.circle-node:hover .circle-node-ring {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.circle-node-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--node-inner-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-node .node-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.circle-node-label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--node-label-color);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.circle-node-count {
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--node-count-color);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.circle-node-count.orphan-badge {
+  color: var(--node-orphan-start);
+  font-weight: 500;
+}
+
+/* Gateway Node - Blue */
+.gateway-node .circle-node-ring {
+  background: linear-gradient(135deg, var(--node-gateway-start) 0%, var(--node-gateway-end) 100%);
+}
+
+.gateway-node .node-icon {
+  color: var(--node-gateway-start);
+}
+
+/* Project Node - Green */
+.project-node .circle-node-ring {
+  background: linear-gradient(135deg, var(--node-project-start) 0%, var(--node-project-end) 100%);
+}
+
+.project-node .node-icon {
+  color: var(--node-project-start);
+}
+
+/* Orphaned Project Node - Purple */
+.project-orphan-node .circle-node-ring {
+  background: linear-gradient(135deg, var(--node-orphan-start) 0%, var(--node-orphan-end) 100%);
+}
+
+.project-orphan-node .node-icon {
+  color: var(--node-orphan-start);
+}
+
+/* Server Node - Grey */
+.server-node .circle-node-ring {
+  background: linear-gradient(135deg, var(--node-server-start) 0%, var(--node-server-end) 100%);
+}
+
+.server-node .node-icon {
+  color: var(--node-server-start);
+}
+
+/* ========================
+   Rectangular Node Styles
+   ======================== */
+
+.rect-node {
+  padding: 12px 16px;
+  border-radius: 8px;
+  min-width: 140px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.rect-node:hover {
+  transform: translateY(-2px);
+}
+
+.rect-node-label {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.rect-node-address {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.rect-node-badge {
+  font-size: 10px;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.rect-node-os {
+  font-size: 10px;
+  opacity: 0.9;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rect-os-icon {
+  flex-shrink: 0;
+}
+
+/* Rectangular Gateway Node - Blue */
+.rect-gateway-node {
+  background: var(--node-gateway-start);
+  color: var(--color-text-inverse);
+  min-width: 160px;
+  cursor: default;
+}
+
+.rect-gateway-node:hover {
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+}
+
+/* Rectangular Project Node - Green */
+.rect-project-node {
+  background: var(--node-project-start);
+  color: var(--color-text-inverse);
+}
+
+.rect-project-node:hover {
+  box-shadow: 0 4px 12px rgba(52, 168, 83, 0.4);
+}
+
+/* Rectangular Orphan Project Node - Purple */
+.rect-project-orphan-node {
+  background: var(--node-orphan-start);
+  color: var(--color-text-inverse);
+}
+
+.rect-project-orphan-node:hover {
+  box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+}
+
+/* Rectangular Server Node - Grey */
+.rect-server-node {
+  background: var(--node-server-start);
+  color: var(--color-text-inverse);
+}
+
+.rect-server-node:hover {
+  box-shadow: 0 4px 12px rgba(95, 99, 104, 0.4);
+}
+
+/* ReactFlow Attribution */
+.react-flow__attribution {
+  font-size: 8px;
+  color: var(--okta-gray-400);
+  padding: 0;
+}
+
+/* ReactFlow Controls */
+.react-flow__controls {
+  margin: 15px 15px 50px 15px !important;
+}
+
+/* Minimap Container */
+.minimap-container {
+  position: absolute;
+  bottom: 30px;
+  right: 10px;
+  z-index: 5;
+}
+
+.minimap-close-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.minimap-close-btn:hover {
+  background: var(--okta-gray-100);
+}
+
+.minimap-close-btn svg {
+  color: var(--okta-gray-600);
+}
+
+/* Restore button (shown when minimap hidden) */
+.minimap-restore-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.minimap-restore-btn:hover {
+  background: var(--okta-gray-100);
+}
+
+.minimap-restore-btn svg {
+  color: var(--okta-gray-600);
+}
+
+/* Make minimap smaller */
+.react-flow__minimap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--okta-gray-300);
+}
+
+.react-flow__controls {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--okta-gray-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.react-flow__controls-button {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  width: 32px !important;
+  height: 32px !important;
+  color: var(--color-text);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--okta-gray-100);
+}
+
+/* Support stroke-based SVG icons in controls */
+.react-flow__controls-button svg {
+  stroke: currentColor;
+}
+
+.react-flow__edge-path {
+  stroke: var(--edge-color);
+  stroke-width: 2;
+}
+
+/* Error Card */
+.error-card {
+  border-left: 4px solid var(--okta-red);
+  margin-bottom: 16px;
+}
+
+.error-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error-item {
+  padding: 8px 12px;
+  background: var(--color-danger-bg);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.error-item small {
+  color: var(--okta-gray-600);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.empty-state svg {
+  color: var(--okta-gray-400);
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  color: var(--okta-gray-700);
+}
+
+.empty-state p {
+  color: var(--okta-gray-600);
+  margin: 0 0 8px 0;
+}
+
+.config-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  text-align: left;
+  display: inline-block;
+}
+
+.config-list li {
+  padding: 6px 0;
+}
+
+/* ========================
+   Node Popup Styles
+   ======================== */
+
+/* Node Popup Container */
+.node-popup-container {
+  position: fixed;
+  z-index: 1000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
+  min-width: 320px;
+  pointer-events: auto;
+}
+
+.node-popup {
+  padding: 0;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--okta-gray-200);
+  background: var(--okta-gray-50);
+  border-radius: 8px 8px 0 0;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--okta-gray-900);
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popup-header h3 .os-icon {
+  flex-shrink: 0;
+  color: var(--okta-gray-600);
+}
+
+.popup-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.popup-details dt {
+  font-weight: 600;
+  color: var(--okta-gray-600);
+  white-space: nowrap;
+}
+
+.popup-details dd {
+  margin: 0;
+  color: var(--okta-gray-900);
+  word-break: break-word;
+}
+
+.popup-details code {
+  background: var(--okta-gray-100);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: monospace;
+}
+
+.popup-details .labels-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.popup-details .label-tag {
+  background: var(--okta-blue-100, #e3f2fd);
+  color: var(--okta-blue-600, #1565c0);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.popup-details .status-warning {
+  color: var(--okta-warning, #f57c00);
+  font-weight: 500;
+}
+
+.popup-links {
+  padding: 12px 16px;
+  border-top: 1px solid var(--okta-gray-200);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--okta-gray-50);
+  border-radius: 0 0 8px 8px;
+}
+
+.popup-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--okta-blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.popup-link:hover {
+  background: var(--okta-blue-50, #e3f2fd);
+  text-decoration: none;
+}
+
+.popup-link svg {
+  flex-shrink: 0;
+}
+
+/* Gateway popup accent */
+.gateway-popup .popup-header {
+  background: linear-gradient(135deg, rgba(26, 115, 232, 0.1) 0%, rgba(26, 115, 232, 0.05) 100%);
+  border-bottom-color: rgba(26, 115, 232, 0.2);
+}
+
+/* Project popup accent */
+.project-popup .popup-header {
+  background: linear-gradient(135deg, rgba(52, 168, 83, 0.1) 0%, rgba(52, 168, 83, 0.05) 100%);
+  border-bottom-color: rgba(52, 168, 83, 0.2);
+}
+
+/* Server popup accent */
+.server-popup .popup-header {
+  background: linear-gradient(135deg, rgba(95, 99, 104, 0.1) 0%, rgba(95, 99, 104, 0.05) 100%);
+  border-bottom-color: rgba(95, 99, 104, 0.2);
+}
+
+/* OS Icons in popup */
+.linux-icon {
+  color: var(--node-label-color);
+}
+
+.windows-icon {
+  color: var(--okta-blue);
+}
+
+/* Fullscreen Mode */
+.graph-page.fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  z-index: 100;
+  background: var(--color-surface);
+  padding: 0;
+  margin: 0;
+}
+
+.graph-page.fullscreen-mode .graph-page-header {
+  display: none;
+}
+
+
+.graph-page.fullscreen-mode .graph-card {
+  height: 100%;
+  margin-bottom: 0;
+}
+
+.graph-page.fullscreen-mode .graph-card .card-header {
+  display: none;
+}
+
+.graph-page.fullscreen-mode .reactflow-container {
+  min-height: unset;
+}
+
+/* Fullscreen button icons toggle */
+.graph-page.fullscreen-mode #fullscreenIcon {
+  display: none;
+}
+
+.graph-page.fullscreen-mode #exitFullscreenIcon {
+  display: inline;
+}
+
+/* ========================
+   Single Graph Layout
+   ======================== */
+
+/* ReactFlow container needs explicit height for proper rendering */
+.graph-card-content .reactflow-container {
+  flex: 1;
+  height: 300px;
+  min-height: 300px;
+}
+
+/* ========================
+   Graph Controls (Top Left)
+   ======================== */
+
+/* Top-left controls panel - same left margin as bottom-left controls for alignment */
+.react-flow__panel.react-flow__controls.top.left {
+  margin: 15px !important;
+}
+
+/* Loading state for refresh button */
+.react-flow__controls-button.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ========================
+   Filter Indicator Styles
+   ======================== */
+
+.graph-filter-indicator {
+  position: absolute;
+  top: 15px;
+  left: 70px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+}
+
+.filter-label {
+  color: var(--okta-gray-700);
+}
+
+.filter-label strong {
+  color: var(--okta-gray-900);
+}
+
+.filter-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.filter-clear-btn:hover {
+  background: var(--okta-gray-100);
+  border-color: var(--okta-gray-400);
+}
+
+.filter-clear-btn svg {
+  color: var(--okta-gray-500);
+}
+
+/* ========================
+   Legend Styles
+   ======================== */
+
+.graph-legend-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.legend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+}
+
+.legend-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.legend-popup {
+  background: var(--color-surface);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 550px;
+  width: 90%;
+  max-height: 100vh;
+  overflow: hidden;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.legend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--okta-gray-200);
+  background: var(--okta-gray-50);
+}
+
+.legend-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--okta-gray-900);
+}
+
+.legend-close-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--okta-gray-500);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.legend-close-btn:hover {
+  background: var(--okta-gray-200);
+  color: var(--okta-gray-700);
+}
+
+.legend-content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
+.legend-section {
+  margin-bottom: 20px;
+}
+
+.legend-section:last-child {
+  margin-bottom: 0;
+}
+
+.legend-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--okta-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-items.os-items {
+  flex-direction: row;
+  gap: 24px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-node-preview {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.legend-node-preview.rectangular {
+  border-radius: 6px;
+  width: 40px;
+  height: 28px;
+}
+
+.legend-node-preview.gateway {
+  background: linear-gradient(135deg, var(--node-gateway-start) 0%, var(--node-gateway-end) 100%);
+  color: var(--color-text-inverse);
+}
+
+.legend-node-preview.project {
+  background: linear-gradient(135deg, var(--node-project-start) 0%, var(--node-project-end) 100%);
+  color: var(--color-text-inverse);
+}
+
+.legend-node-preview.orphan {
+  background: linear-gradient(135deg, var(--node-orphan-start) 0%, var(--node-orphan-end) 100%);
+  color: var(--color-text-inverse);
+}
+
+.legend-node-preview.server {
+  background: linear-gradient(135deg, var(--node-server-start) 0%, var(--node-server-end) 100%);
+  color: var(--color-text-inverse);
+}
+
+.legend-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legend-item-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--okta-gray-900);
+}
+
+.legend-item-desc {
+  font-size: 12px;
+  color: var(--okta-gray-600);
+}
+
+.legend-os-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.legend-hints {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  color: var(--okta-gray-700);
+}
+
+.legend-hints li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--okta-gray-100);
+}
+
+.legend-hints li:last-child {
+  border-bottom: none;
+}
+
+.legend-hints strong {
+  color: var(--okta-gray-900);
+}
+
+/* ========================
+   Custom Handle Styles
+   ======================== */
+
+/* Hide default ReactFlow handle dots */
+.react-flow__handle.custom-handle {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  border: none;
+  opacity: 0;
+}
+
+/* Show handles on node hover for drag interaction */
+.react-flow__node:hover .react-flow__handle.custom-handle {
+  opacity: 0;
+}
+
+/* Edge styling with arrows */
+.react-flow__edge-path {
+  stroke: var(--edge-color);
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--okta-blue);
+  stroke-width: 2.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .graph-page {
+    height: calc(100vh - var(--header-height) - 32px);
+    min-height: 500px;
+  }
+
+  .stats-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .stats-cards .stat-card {
+    padding: 12px;
+  }
+
+  .stats-cards .stat-value {
+    font-size: 24px;
+  }
+
+  .graph-card {
+    min-height: 300px;
+  }
+
+  .reactflow-container {
+    min-height: 300px;
+  }
+
+  .graph-controls {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,63 @@
+{{!-- Pagination partial - event handlers attached via sessionList.js --}}
+<div class="pagination-container">
+  <div class="pagination-info">
+    Showing {{pagination.startIndex}} - {{pagination.endIndex}} of {{pagination.totalCount}} sessions
+    {{#if @root.hasActiveFilters}}
+      <span class="search-result-info">(filtered)</span>
+    {{/if}}
+  </div>
+
+  <div class="pagination-controls">
+    {{#if pagination.hasPrevious}}
+      <a href="#" class="btn btn-secondary btn-small pagination-btn pagination-nav" data-page="{{pagination.previousPage}}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Previous
+      </a>
+    {{else}}
+      <button class="btn btn-secondary btn-small pagination-btn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Previous
+      </button>
+    {{/if}}
+
+    <div class="pagination-pages">
+      {{#each pagination.pageNumbers}}
+        {{#if (eq this "...")}}
+          <span class="pagination-ellipsis">...</span>
+        {{else}}
+          {{#if (eq this ../pagination.currentPage)}}
+            <span class="pagination-page active">{{this}}</span>
+          {{else}}
+            <a href="#" class="pagination-page pagination-nav" data-page="{{this}}">{{this}}</a>
+          {{/if}}
+        {{/if}}
+      {{/each}}
+    </div>
+
+    {{#if pagination.hasNext}}
+      <a href="#" class="btn btn-secondary btn-small pagination-btn pagination-nav" data-page="{{pagination.nextPage}}">
+        Next
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+    {{else}}
+      <button class="btn btn-secondary btn-small pagination-btn" disabled>
+        Next
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    {{/if}}
+  </div>
+
+  <div class="pagination-jump">
+    <label for="pageJump">Go to page:</label>
+    <input type="number" id="pageJump" min="1" max="{{pagination.totalPages}}" value="{{pagination.currentPage}}" class="page-jump-input" data-max="{{pagination.totalPages}}">
+    <button type="button" id="pageJumpBtn" class="btn btn-secondary btn-small">Go</button>
+  </div>
+</div>

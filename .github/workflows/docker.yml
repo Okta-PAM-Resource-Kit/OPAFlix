@@ -1,0 +1,35 @@
+# Docker build validation workflow
+# Validates that the Docker image builds successfully when Docker files change
+
+name: Docker Build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: false
+        tags: opaflix:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

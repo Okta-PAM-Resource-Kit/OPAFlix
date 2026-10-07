@@ -1,0 +1,48 @@
+{
+  "version": 2,
+  "name": "opaflix",
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "src/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/public/(.*)",
+      "dest": "/public/$1",
+      "headers": {
+        "cache-control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1",
+      "headers": {
+        "cache-control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1",
+      "headers": {
+        "cache-control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/favicon\\.(svg|ico|png)",
+      "dest": "/public/favicon.svg",
+      "headers": {
+        "cache-control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/src/index.js"
+    }
+  ]
+}

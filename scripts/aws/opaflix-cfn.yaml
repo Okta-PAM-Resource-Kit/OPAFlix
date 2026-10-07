@@ -1,0 +1,518 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Opaflix Infrastructure Stack - Creates S3 bucket, IAM roles, IAM Roles Anywhere
+  configuration for Opaflix session recording playback.
+
+# =============================================================================
+# Parameters
+# =============================================================================
+
+Parameters:
+  BucketPrefix:
+    Type: String
+    Default: opaflix-sessions
+    Description: S3 bucket name prefix (will be appended with unique suffix)
+    AllowedPattern: ^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$
+    ConstraintDescription: >
+      Bucket prefix must be 3-52 characters, lowercase letters, numbers, and hyphens only.
+      Cannot start or end with a hyphen.
+
+  CaCertificateParameterName:
+    Type: String
+    Default: /opaflix/ca-certificate
+    Description: >
+      SSM Parameter Store parameter name containing the CA certificate in PEM format.
+      The parameter should be of type String.
+      Create it with: aws ssm put-parameter --name /opaflix/ca-certificate --type String --value "$(cat ca-cert.pem)"
+
+  GatewayInstanceName:
+    Type: String
+    Default: ''
+    Description: Name tag of the OPA Gateway EC2 instance. Used if Instance ID is empty.
+
+  GatewayInstanceId:
+    Type: String
+    Default: ''
+    Description: EC2 Instance ID (e.g., i-0123456789abcdef0). Takes priority over Name.
+
+  CorsAllowedOrigin:
+    Type: String
+    Default: 'https://opaflix.vercel.app'
+    Description: >
+      Allowed origin for CORS requests to the S3 bucket.
+      This should be the URL of your Opaflix deployment.
+
+# =============================================================================
+# Metadata
+# =============================================================================
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: S3 Configuration
+        Parameters:
+          - BucketPrefix
+          - CorsAllowedOrigin
+      - Label:
+          default: IAM Roles Anywhere Configuration
+        Parameters:
+          - CaCertificateParameterName
+      - Label:
+          default: OPA Gateway Configuration
+        Parameters:
+          - GatewayInstanceId
+          - GatewayInstanceName
+    ParameterLabels:
+      BucketPrefix:
+        default: Bucket Name Prefix
+      CorsAllowedOrigin:
+        default: CORS Allowed Origin
+      CaCertificateParameterName:
+        default: CA Certificate SSM Parameter Name
+      GatewayInstanceId:
+        default: Gateway EC2 Instance ID (optional)
+      GatewayInstanceName:
+        default: Gateway EC2 Instance Name (optional)
+
+# =============================================================================
+# Resources
+# =============================================================================
+
+Resources:
+
+  # ---------------------------------------------------------------------------
+  # S3 Bucket for Session Recordings
+  # ---------------------------------------------------------------------------
+
+  SessionsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub
+        - '${Prefix}-${RandomSuffix}'
+        - Prefix: !Ref BucketPrefix
+          RandomSuffix: !Select [0, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]]
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteIncompleteMultipartUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: ExpireOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 90
+            ExpiredObjectDeleteMarker: true
+      CorsConfiguration:
+        CorsRules:
+          - Id: AllowOpaflixAccess
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - !Ref CorsAllowedOrigin
+            MaxAge: 3600
+      Tags:
+        - Key: Application
+          Value: Opaflix
+        - Key: Environment
+          Value: production
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ---------------------------------------------------------------------------
+  # IAM Role: OPA Gateway (Read/Write via EC2 Instance Profile)
+  # ---------------------------------------------------------------------------
+
+  GatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-gateway-role'
+      Description: IAM role for OPA Gateway to write session recordings to S3
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3ReadWriteAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ListBucket
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt SessionsBucket.Arn
+              - Sid: ReadWriteObjects
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub '${SessionsBucket.Arn}/*'
+      Tags:
+        - Key: Application
+          Value: Opaflix
+        - Key: Environment
+          Value: production
+        - Key: Purpose
+          Value: OPA-Gateway-S3-Access
+
+  # EC2 Instance Profile for Gateway
+  GatewayInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub '${AWS::StackName}-gateway-profile'
+      Roles:
+        - !Ref GatewayRole
+
+  # ---------------------------------------------------------------------------
+  # Lambda: Auto-attach Instance Profile to EC2
+  # ---------------------------------------------------------------------------
+
+  InstanceProfileAssociationLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: EC2InstanceProfileAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:AssociateIamInstanceProfile
+                  - ec2:DisassociateIamInstanceProfile
+                  - ec2:DescribeIamInstanceProfileAssociations
+                  - ec2:DescribeInstances
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: !GetAtt GatewayRole.Arn
+
+  InstanceProfileAssociationLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-attach-profile'
+      Description: Attaches IAM instance profile to OPA Gateway EC2 instance
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt InstanceProfileAssociationLambdaRole.Arn
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import logging
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          ec2 = boto3.client('ec2')
+
+          def resolve_instance_id(instance_id, instance_name):
+              """Resolve instance ID from ID or Name tag."""
+              # If ID provided, use it directly
+              if instance_id:
+                  logger.info(f"Using provided instance ID: {instance_id}")
+                  return instance_id
+
+              # If no Name provided either, fail
+              if not instance_name:
+                  raise Exception("Either InstanceId or InstanceName must be provided")
+
+              # Look up by Name tag
+              logger.info(f"Looking up instance by Name tag: {instance_name}")
+              response = ec2.describe_instances(
+                  Filters=[
+                      {'Name': 'tag:Name', 'Values': [instance_name]},
+                      {'Name': 'instance-state-name', 'Values': ['running', 'stopped', 'pending']}
+                  ]
+              )
+
+              instances = []
+              for reservation in response['Reservations']:
+                  instances.extend(reservation['Instances'])
+
+              if not instances:
+                  raise Exception(f"No instance found with Name tag: {instance_name}")
+
+              if len(instances) > 1:
+                  ids = [i['InstanceId'] for i in instances]
+                  raise Exception(f"Multiple instances found with Name '{instance_name}': {ids}. Please use InstanceId instead.")
+
+              resolved_id = instances[0]['InstanceId']
+              logger.info(f"Resolved instance name '{instance_name}' to ID '{resolved_id}'")
+              return resolved_id
+
+          def handler(event, context):
+              logger.info(f"Event: {event}")
+
+              props = event['ResourceProperties']
+              instance_id = props.get('InstanceId', '')
+              instance_name = props.get('InstanceName', '')
+              profile_arn = props['InstanceProfileArn']
+              profile_name = props['InstanceProfileName']
+
+              try:
+                  # Resolve instance ID (from ID or Name)
+                  resolved_instance_id = resolve_instance_id(instance_id, instance_name)
+
+                  if event['RequestType'] in ['Create', 'Update']:
+                      # Check for existing associations
+                      associations = ec2.describe_iam_instance_profile_associations(
+                          Filters=[{'Name': 'instance-id', 'Values': [resolved_instance_id]}]
+                      )['IamInstanceProfileAssociations']
+
+                      # Remove existing associations
+                      for assoc in associations:
+                          if assoc['State'] != 'disassociating':
+                              logger.info(f"Removing existing profile: {assoc['IamInstanceProfile']['Arn']}")
+                              ec2.disassociate_iam_instance_profile(AssociationId=assoc['AssociationId'])
+
+                      # Attach new profile
+                      logger.info(f"Attaching profile {profile_name} to instance {resolved_instance_id}")
+                      response = ec2.associate_iam_instance_profile(
+                          IamInstanceProfile={'Arn': profile_arn, 'Name': profile_name},
+                          InstanceId=resolved_instance_id
+                      )
+                      association_id = response['IamInstanceProfileAssociation']['AssociationId']
+
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS,
+                          {'AssociationId': association_id, 'ResolvedInstanceId': resolved_instance_id},
+                          association_id)
+
+                  elif event['RequestType'] == 'Delete':
+                      # Remove the association on stack delete
+                      associations = ec2.describe_iam_instance_profile_associations(
+                          Filters=[{'Name': 'instance-id', 'Values': [resolved_instance_id]}]
+                      )['IamInstanceProfileAssociations']
+
+                      for assoc in associations:
+                          if assoc['IamInstanceProfile']['Arn'] == profile_arn:
+                              logger.info(f"Removing profile association: {assoc['AssociationId']}")
+                              ec2.disassociate_iam_instance_profile(AssociationId=assoc['AssociationId'])
+
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+
+              except Exception as e:
+                  logger.error(f"Error: {str(e)}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {'Error': str(e)})
+
+  # Custom Resource to trigger the Lambda
+  InstanceProfileAssociation:
+    Type: Custom::InstanceProfileAssociation
+    DependsOn:
+      - GatewayInstanceProfile
+      - InstanceProfileAssociationLambda
+    Properties:
+      ServiceToken: !GetAtt InstanceProfileAssociationLambda.Arn
+      InstanceId: !Ref GatewayInstanceId
+      InstanceName: !Ref GatewayInstanceName
+      InstanceProfileArn: !GetAtt GatewayInstanceProfile.Arn
+      InstanceProfileName: !Ref GatewayInstanceProfile
+
+  # ---------------------------------------------------------------------------
+  # IAM Role: Opaflix Application (Read-Only via Roles Anywhere)
+  # ---------------------------------------------------------------------------
+
+  AppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-app-role'
+      Description: IAM role for Opaflix application to read session recordings from S3
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: rolesanywhere.amazonaws.com
+            Action:
+              - sts:AssumeRole
+              - sts:TagSession
+              - sts:SetSourceIdentity
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt TrustAnchor.TrustAnchorArn
+      Policies:
+        - PolicyName: S3ReadOnlyAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ListBucket
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt SessionsBucket.Arn
+              - Sid: ReadObjects
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub '${SessionsBucket.Arn}/*'
+      Tags:
+        - Key: Application
+          Value: Opaflix
+        - Key: Environment
+          Value: production
+        - Key: Purpose
+          Value: App-S3-Access
+
+  # ---------------------------------------------------------------------------
+  # IAM Roles Anywhere: Trust Anchor
+  # ---------------------------------------------------------------------------
+
+  TrustAnchor:
+    Type: AWS::RolesAnywhere::TrustAnchor
+    Properties:
+      Name: !Sub '${AWS::StackName}-trust-anchor'
+      Enabled: true
+      Source:
+        SourceType: CERTIFICATE_BUNDLE
+        SourceData:
+          # Resolve CA certificate from SSM Parameter Store
+          # Supports both String and SecureString parameter types
+          X509CertificateData: !Sub '{{resolve:ssm:${CaCertificateParameterName}}}'
+      Tags:
+        - Key: Application
+          Value: Opaflix
+        - Key: Environment
+          Value: production
+
+  # ---------------------------------------------------------------------------
+  # IAM Roles Anywhere: Profile
+  # ---------------------------------------------------------------------------
+
+  RolesAnywhereProfile:
+    Type: AWS::RolesAnywhere::Profile
+    Properties:
+      Name: !Sub '${AWS::StackName}-profile'
+      Enabled: true
+      DurationSeconds: 3600
+      RoleArns:
+        - !GetAtt AppRole.Arn
+      Tags:
+        - Key: Application
+          Value: Opaflix
+        - Key: Environment
+          Value: production
+
+# =============================================================================
+# Outputs
+# =============================================================================
+
+Outputs:
+
+  # S3 Bucket
+  BucketName:
+    Description: Name of the S3 bucket for session recordings
+    Value: !Ref SessionsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+
+  BucketArn:
+    Description: ARN of the S3 bucket
+    Value: !GetAtt SessionsBucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketArn'
+
+  BucketRegion:
+    Description: Region of the S3 bucket
+    Value: !Ref AWS::Region
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketRegion'
+
+  # Gateway Role and Instance Profile
+  GatewayRoleArn:
+    Description: ARN of the IAM role for OPA Gateway
+    Value: !GetAtt GatewayRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GatewayRoleArn'
+
+  GatewayInstanceProfileArn:
+    Description: ARN of the EC2 instance profile for OPA Gateway
+    Value: !GetAtt GatewayInstanceProfile.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GatewayInstanceProfileArn'
+
+  GatewayInstanceProfileName:
+    Description: Name of the EC2 instance profile for OPA Gateway
+    Value: !Ref GatewayInstanceProfile
+    Export:
+      Name: !Sub '${AWS::StackName}-GatewayInstanceProfileName'
+
+  GatewayResolvedInstanceId:
+    Description: Resolved EC2 Instance ID with attached instance profile
+    Value: !GetAtt InstanceProfileAssociation.ResolvedInstanceId
+
+  # Opaflix App Role (for Roles Anywhere)
+  IAMRoleArn:
+    Description: ARN of the IAM role for Opaflix application
+    Value: !GetAtt AppRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-AppRoleArn'
+
+  # IAM Roles Anywhere
+  TrustAnchorArn:
+    Description: ARN of the IAM Roles Anywhere Trust Anchor
+    Value: !GetAtt TrustAnchor.TrustAnchorArn
+    Export:
+      Name: !Sub '${AWS::StackName}-TrustAnchorArn'
+
+  ProfileArn:
+    Description: ARN of the IAM Roles Anywhere Profile
+    Value: !GetAtt RolesAnywhereProfile.ProfileArn
+    Export:
+      Name: !Sub '${AWS::StackName}-ProfileArn'
+
+  # Configuration for Opaflix .env file
+  OpaflixConfiguration:
+    Description: Environment variables for Opaflix single-tenant deployment
+    Value: !Sub |
+      # AWS S3 Configuration
+      AWS_S3_BUCKET=${SessionsBucket}
+      AWS_REGION=${AWS::Region}
+
+      # IAM Roles Anywhere Configuration
+      AWS_ROLES_ANYWHERE_TRUST_ANCHOR_ARN=${TrustAnchor.TrustAnchorArn}
+      AWS_ROLES_ANYWHERE_PROFILE_ARN=${RolesAnywhereProfile.ProfileArn}
+      AWS_ROLES_ANYWHERE_ROLE_ARN=${AppRole.Arn}
+
+      # Note: Copy certificate and private key from scripts/aws/data/
+      # AWS_ROLES_ANYWHERE_CERTIFICATE="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+      # AWS_ROLES_ANYWHERE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+
+  CertificateFilesPaths:
+    Description: Paths to certificate files (generated by deploy.sh)
+    Value: !Sub |
+      CA Certificate: scripts/aws/data/ca-cert.pem (stored in SSM: ${CaCertificateParameterName})
+      App Certificate: scripts/aws/data/opaflix-cert.pem
+      App Private Key: scripts/aws/data/opaflix-key.pem

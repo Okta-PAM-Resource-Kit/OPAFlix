@@ -1,0 +1,86 @@
+<!-- Advanced Search Modal -->
+<div id="advancedSearchModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Advanced Search</h2>
+      <button type="button" id="modalCloseBtn" class="modal-close" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <form id="advancedSearchForm" class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="adv-type">Session Type</label>
+          <select id="adv-type" name="type" class="form-input">
+            <option value="" {{#unless @root.typeFilter}}selected{{/unless}}>All Types</option>
+            <option value="ssh" {{#if (eq @root.typeFilter "ssh")}}selected{{/if}}>SSH</option>
+            <option value="rdp" {{#if (eq @root.typeFilter "rdp")}}selected{{/if}}>RDP</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="adv-server">Server</label>
+          <div class="autocomplete-wrapper">
+            <input type="text" id="adv-server" name="server" class="form-input autocomplete-input"
+                   placeholder="Search servers..."
+                   data-autocomplete="servers"
+                   value="{{@root.advancedFilters.server}}"
+                   autocomplete="off">
+            <div class="autocomplete-dropdown" id="adv-server-dropdown"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="adv-username">Username</label>
+          <div class="autocomplete-wrapper">
+            <input type="text" id="adv-username" name="username" class="form-input autocomplete-input"
+                   placeholder="Search users..."
+                   data-autocomplete="users"
+                   value="{{@root.advancedFilters.username}}"
+                   autocomplete="off">
+            <div class="autocomplete-dropdown" id="adv-username-dropdown"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="adv-project">Project</label>
+          <div class="autocomplete-wrapper">
+            <input type="text" id="adv-project" name="project" class="form-input autocomplete-input"
+                   placeholder="Search projects..."
+                   data-autocomplete="projects"
+                   value="{{@root.advancedFilters.project}}"
+                   autocomplete="off">
+            <div class="autocomplete-dropdown" id="adv-project-dropdown"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="adv-dateFrom">Start Date/Time</label>
+          <input type="datetime-local" id="adv-dateFrom" name="dateFrom" class="form-input" value="{{@root.advancedFilters.dateFrom}}">
+        </div>
+        <div class="form-group">
+          <label for="adv-dateTo">End Date/Time</label>
+          <input type="datetime-local" id="adv-dateTo" name="dateTo" class="form-input" value="{{@root.advancedFilters.dateTo}}">
+        </div>
+      </div>
+      <div class="form-row date-presets">
+        <label>Quick date range:</label>
+        <div class="preset-buttons" id="datePresetButtons">
+          <button type="button" class="btn btn-secondary btn-small" data-preset="today">Today</button>
+          <button type="button" class="btn btn-secondary btn-small" data-preset="yesterday">Yesterday</button>
+          <button type="button" class="btn btn-secondary btn-small" data-preset="week">Last 7 days</button>
+          <button type="button" class="btn btn-secondary btn-small" data-preset="month">Last 30 days</button>
+          <button type="button" class="btn btn-secondary btn-small" data-preset="year">Last year</button>
+          <button type="button" class="btn btn-secondary btn-small" data-preset="clear">Clear dates</button>
+        </div>
+      </div>
+    </form>
+    <div class="modal-footer">
+      <button type="button" id="resetFiltersBtn" class="btn btn-secondary">Reset</button>
+      <button type="button" id="applyFiltersBtn" class="btn btn-primary">Apply Filters</button>
+    </div>
+  </div>
+</div>
